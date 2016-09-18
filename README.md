@@ -9,95 +9,108 @@
 
 **User Stories**
 
-  *required*
+*required*
 
-  - [x] Required: Requests to port `8000` are echoed back with the same HTTP headers and body
-  - [x] Required: Requests/reponses are proxied to/from the destination server
-  - [x] Required: The destination server is configurable via the `--host`, `--port`  or `--url` arguments
-  - [x] Required: The destination server is configurable via the `x-destination-url` header
-  - [x] Required: Client requests and respones are printed to stdout
-  - [x] Required: The `--logfile` argument outputs all logs to the file specified instead of stdout
+  - [x] Requests to port `8000` are echoed back with the same HTTP headers and body.
+  - [x] Requests/reponses are proxied to/from the destination server.
+  - [x] The destination server is configurable via the `--host`, `--port`  or `--url` arguments.
+  - [x] The destination server is configurable via the `x-destination-url` header.
+  - [x] Client requests and respones are printed to stdout.
+  - [x] The `--logfile` argument outputs all logs to the file specified instead of stdout.
 
-  *optional*
-  - [ ] Optional: The `--exec` argument proxies stdin/stdout to/from the destination program
-  - [ ] Optional: The `--loglevel` argument sets the logging chattiness
-  - [ ] Optional: Supports HTTPS
-  - [ ] Optional: `-h` argument prints CLI API
+*optional*
 
-Walkthrough Gif:
-[Add walkthrough.gif to the project root]
+  - [ ] The `--exec` argument proxies stdin/stdout to/from the destination program
+  - [ ] The `--loglevel` argument sets the logging chattiness
+  - [ ] Supports HTTPS
+  - [ ] `-h` argument prints CLI API
 
-![Video Walkthrough](walkthrough.gif)
+## Video Walkthrough
 
-Note: to embed the gif file, just check your gif file into your repo and update the name of the file above.
+Here's a walkthrough of implemented user stories:
 
-## Starting the Server
+![](./proxy-server.gif)
 
-```bash
-npm start
-```
+## Commands
+
+- Server Startup Commands
+  - nodemon --use-strict index.js
+  - nodemon --use-strict index.js --host=google.com --port=80
+  - nodemon --use-strict index.js --url=http://google.com:80
+  - nodemon --use-strict index.js --logfile=proxy.log
+
+
+- echo server
+  - curl -v -X POST http://127.0.0.1:8000 -d "hello node" -H "foo: bar"
+
+
+- proxy server
+  - curl -v -X POST http://127.0.0.1:9000 -d "hello node" -H "x-destination-url: 127.0.0.1:8000"
+  - curl -v -X GET http://127.0.0.1:9000
+
 
 ## Features
 
 ### Echo Server:
 
 ```bash
-curl -v -X POST http://127.0.0.1:8000 -d "hello self" -H "x-asdf: yodawg"
+➜  proxy-server git:(master) ✗ curl -v -X POST http://127.0.0.1:8000 -d "hello node" -H "x-destination-url: 127.0.0.1:8000"
 * Rebuilt URL to: http://127.0.0.1:8000/
-* Hostname was NOT found in DNS cache
 *   Trying 127.0.0.1...
 * Connected to 127.0.0.1 (127.0.0.1) port 8000 (#0)
 > POST / HTTP/1.1
-> User-Agent: curl/7.37.1
 > Host: 127.0.0.1:8000
+> User-Agent: curl/7.43.0
 > Accept: */*
-> x-asdf: yodawg
+> x-destination-url: 127.0.0.1:8000
 > Content-Length: 10
 > Content-Type: application/x-www-form-urlencoded
 >
 * upload completely sent off: 10 out of 10 bytes
 < HTTP/1.1 200 OK
-< user-agent: curl/7.37.1
 < host: 127.0.0.1:8000
+< user-agent: curl/7.43.0
 < accept: */*
-< x-asdf: yodawg
+< x-destination-url: 127.0.0.1:8000
 < content-length: 10
 < content-type: application/x-www-form-urlencoded
-< Date: Mon, 13 Apr 2015 00:45:50 GMT
+< Date: Sun, 18 Sep 2016 03:24:00 GMT
 < Connection: keep-alive
 <
 * Connection #0 to host 127.0.0.1 left intact
-hello self
+hello node%
 ```
 
 ### Proxy Server:
 
-Port 8001 will proxy to the echo server on port 8000.
+Port 9000 will proxy to the echo server on port 8000.
 
 ```bash
-curl -v http://127.0.0.1:8001/asdf -d "hello proxy"
-* Hostname was NOT found in DNS cache
+➜  proxy-server git:(master) ✗ curl -v -X POST http://127.0.0.1:9000 -d "hello node" -H "x-destination-url: 127.0.0.1:8000"
+* Rebuilt URL to: http://127.0.0.1:9000/
 *   Trying 127.0.0.1...
-* Connected to 127.0.0.1 (127.0.0.1) port 8001 (#0)
-> POST /asdf HTTP/1.1
-> User-Agent: curl/7.37.1
-> Host: 127.0.0.1:8001
+* Connected to 127.0.0.1 (127.0.0.1) port 9000 (#0)
+> POST / HTTP/1.1
+> Host: 127.0.0.1:9000
+> User-Agent: curl/7.43.0
 > Accept: */*
-> Content-Length: 11
+> x-destination-url: 127.0.0.1:8000
+> Content-Length: 10
 > Content-Type: application/x-www-form-urlencoded
 >
-* upload completely sent off: 11 out of 11 bytes
+* upload completely sent off: 10 out of 10 bytes
 < HTTP/1.1 200 OK
-< user-agent: curl/7.37.1
-< host: 127.0.0.1:8001
+< host: 127.0.0.1:8000
+< user-agent: curl/7.43.0
 < accept: */*
-< content-length: 11
+< x-destination-url: 127.0.0.1:8000
+< content-length: 10
 < content-type: application/x-www-form-urlencoded
 < connection: close
-< date: Mon, 13 Apr 2015 02:03:29 GMT
+< date: Sun, 18 Sep 2016 03:27:20 GMT
 <
 * Closing connection 0
-hello proxy
+hello node%
 ```
 
 ### Configuration:
